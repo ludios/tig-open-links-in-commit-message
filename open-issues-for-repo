@@ -3,7 +3,7 @@
 import sys
 import subprocess
 
-from tig_helpers import get_site, get_github_user_and_repo, get_origin_url
+from tig_helpers import get_site, get_github_user_and_repo, get_origin_url, open_url
 
 def main():
 	origin_url = get_origin_url()
@@ -14,8 +14,7 @@ def main():
 	elif site == "chromium.googlesource.com":
 		project    = origin_url.replace("https://chromium.googlesource.com/", "", 1).split("/")[0]
 		url        = "https://bugs.chromium.org/p/%s/issues/list?q=" % (project)
-
-	subprocess.call(["xdg-open", url])
+	open_url(url)
 
 if __name__ == "__main__":
 	main()
