@@ -3,6 +3,8 @@
 import re
 import sys
 import subprocess
+import webbrowser
+import platform
 
 from tig_helpers import get_site, get_github_user_and_repo, get_origin_url
 
@@ -29,6 +31,16 @@ assert get_urls_and_issue_numbers("Fixes#1 GH-2000 http://test/path)") == [1, 20
 assert get_urls_and_issue_numbers("Fixes#1 GH-2000 http://test/path]") == [1, 2000, "http://test/path"]
 assert get_urls_and_issue_numbers("Fixes#1 GH-2000 http://test/path>") == [1, 2000, "http://test/path"]
 
+def open_url(url):
+	if sys.version_info >= (2, 7, 4):
+		webbrowser.open(url)
+	else:
+		plat = platform.system().lower()
+		if plat == 'darwin':
+			subprocess.call(["open", url])
+		else:
+			subprocess.call(["xdg-open", url])
+
 def main():
 	commit     = sys.argv[1]
 	message    = subprocess.check_output(["git", "log", "--format=%B", "-n", "1", commit]).decode("utf-8")
@@ -41,20 +53,20 @@ def main():
 				url = "https://github.com/%s/%s/issues/%d" % (user, repo, url_or_issue)
 			else:
 				url = url_or_issue
-			subprocess.call(["xdg-open", url])
+			open_url(url)
 	elif site == "anonscm.debian.org":
 		for url_or_issue in get_urls_and_issue_numbers(message):
 			if not isinstance(url_or_issue, (str, bytes)):
 				url = "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%d" % (url_or_issue,)
 			else:
 				url = url_or_issue
-			subprocess.call(["xdg-open", url])
+			open_url(url)
 	else:
 		for url_or_issue in get_urls_and_issue_numbers(message):
 			# Ignore issue numbers for non-github.com repos
 			if isinstance(url_or_issue, (str, bytes)):
 				url = url_or_issue
-				subprocess.call(["xdg-open", url])
+				open_url(url)
 
 if __name__ == "__main__":
 	main()
